@@ -161,3 +161,7 @@ SRCS += \
 
 # Finally, leave this line at the bottom of the file.
 include $(GOSSAMER_PATH)/rules.mk
+
+compile_commands:
+	python3 utils/generate_compdb.py --board=$(BOARD) --display=$(DISPLAY)
+

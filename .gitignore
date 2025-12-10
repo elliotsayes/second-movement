@@ -27,3 +27,5 @@ fp-info-cache
 *.plan
 /.direnv
 /.emscripten_cache
+/.cache
+compile_commands.json
