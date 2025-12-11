@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "close_enough_face.h"
+#include "verbal_clock_face.h"
 #include "watch.h"
 #include "watch_utility.h"
 #include "watch_common_display.h"
@@ -74,16 +74,16 @@ static void clock_indicate(watch_indicator_t indicator, bool on) {
     }
 }
 
-void close_enough_face_setup(uint8_t watch_face_index, void ** context_ptr) {
+void verbal_clock_face_setup(uint8_t watch_face_index, void ** context_ptr) {
     (void) watch_face_index;
     if (*context_ptr == NULL) {
-        *context_ptr = malloc(sizeof(close_enough_state_t));
-        memset(*context_ptr, 0, sizeof(close_enough_state_t));
+        *context_ptr = malloc(sizeof(verbal_clock_state_t));
+        memset(*context_ptr, 0, sizeof(verbal_clock_state_t));
     }
 }
 
-void close_enough_face_activate(void *context) {
-    close_enough_state_t *state = (close_enough_state_t *)context;
+void verbal_clock_face_activate(void *context) {
+    verbal_clock_state_t *state = (verbal_clock_state_t *)context;
 
     clock_stop_tick_tock_animation();
 
@@ -95,7 +95,7 @@ void close_enough_face_activate(void *context) {
     state->prev_min_checked = -1;
 }
 
-static void clock_check_battery_periodically(close_enough_state_t *state) {
+static void clock_check_battery_periodically(verbal_clock_state_t *state) {
     // If the battery is  low, skip the check. We have already indicated it.
     if (state->battery_low) {
         return;
@@ -120,13 +120,13 @@ static void clock_check_battery_periodically(close_enough_state_t *state) {
     }
 }
 
-bool close_enough_face_loop(movement_event_t event, void *context) {
-    close_enough_state_t *state = (close_enough_state_t *)context;
+bool verbal_clock_face_loop(movement_event_t event, void *context) {
+    verbal_clock_state_t *state = (verbal_clock_state_t *)context;
     watch_date_time_t date_time;
     bool show_next_hour = false;
     int prev_five_minute_period;
     int prev_min_checked;
-    int close_enough_hour;
+    int verbal_clock_hour;
 
     switch (event.event_type) {
         case EVENT_ACTIVATE:
@@ -163,25 +163,25 @@ bool close_enough_face_loop(movement_event_t event, void *context) {
                 break;
             }
 
-            close_enough_hour = date_time.unit.hour;
+            verbal_clock_hour = date_time.unit.hour;
 
             // move from "MM P HH" to "MM 2 HH+1"
             if (five_minute_period >= hour_switch_index || show_next_hour) {
-                close_enough_hour = (close_enough_hour + 1) % 24;
+                verbal_clock_hour = (verbal_clock_hour + 1) % 24;
                 show_next_hour = true;
             }
 
             if (movement_clock_mode_24h() != MOVEMENT_CLOCK_MODE_24H) {
                 // if we are at "MM 2 12", don't show the PM indicator
-                if (close_enough_hour < 12 || show_next_hour) {
+                if (verbal_clock_hour < 12 || show_next_hour) {
                     watch_clear_indicator(WATCH_INDICATOR_PM);
                 } else {
                     watch_set_indicator(WATCH_INDICATOR_PM);
                 }
 
-                close_enough_hour %= 12;
-                if (close_enough_hour == 0) {
-                    close_enough_hour = 12;
+                verbal_clock_hour %= 12;
+                if (verbal_clock_hour == 0) {
+                    verbal_clock_hour = 12;
                 }
             }
 
@@ -190,7 +190,7 @@ bool close_enough_face_loop(movement_event_t event, void *context) {
             char third_word[3];
             if (five_minute_period == 0) { // "  HH OC",
                 sprintf(first_word, "  ");
-                sprintf(second_word, "%2d", close_enough_hour);
+                sprintf(second_word, "%2d", verbal_clock_hour);
                 strncpy(third_word, oclock_word, 3);
             } else { // "MM P HH" or "MM 2 HH+1"
                 int words_length = sizeof(words) / sizeof(words[0]);
@@ -207,7 +207,7 @@ bool close_enough_face_loop(movement_event_t event, void *context) {
                     show_next_hour ? to_word : past_word,
                     3
                 );
-                sprintf(third_word, "%2d", close_enough_hour);
+                sprintf(third_word, "%2d", verbal_clock_hour);
             }
 
             watch_display_text_with_fallback(
@@ -244,7 +244,7 @@ bool close_enough_face_loop(movement_event_t event, void *context) {
     return true;
 }
 
-void close_enough_face_resign(void *context) {
+void verbal_clock_face_resign(void *context) {
     (void) context;
 }
 

@@ -41,17 +41,17 @@ typedef struct {
     int prev_min_checked;
     uint8_t last_battery_check;
     bool battery_low;
-} close_enough_state_t;
+} verbal_clock_state_t;
 
-void close_enough_face_setup(uint8_t watch_face_index, void ** context_ptr);
-void close_enough_face_activate(void *context);
-bool close_enough_face_loop(movement_event_t event, void *context);
-void close_enough_face_resign(void *context);
+void verbal_clock_face_setup(uint8_t watch_face_index, void ** context_ptr);
+void verbal_clock_face_activate(void *context);
+bool verbal_clock_face_loop(movement_event_t event, void *context);
+void verbal_clock_face_resign(void *context);
 
-#define close_enough_face ((const watch_face_t){ \
-    close_enough_face_setup, \
-    close_enough_face_activate, \
-    close_enough_face_loop, \
-    close_enough_face_resign, \
+#define verbal_clock_face ((const watch_face_t){ \
+    verbal_clock_face_setup, \
+    verbal_clock_face_activate, \
+    verbal_clock_face_loop, \
+    verbal_clock_face_resign, \
     NULL, \
 })
