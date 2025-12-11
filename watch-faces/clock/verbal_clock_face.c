@@ -37,13 +37,31 @@
 #endif
 
 static const char *words[12] = {
-    "  ",
-    " 5",
-    "10",
-    "15",
-    "20",
-    "25",
-    "30",
+    "   ",
+    "FIV",
+    "TEN",
+    "QTR",
+    "TWY",
+    "TW5",
+    "HLF",
+    // unused
+    "35",
+    "40",
+    "45",
+    "50",
+    "55",
+};
+
+// TODO: use these
+static const char *words_fallback[12] = {
+    "   ",
+    "FV ",
+    "TN ",
+    "QR ",
+    "TY ",
+    "T5 ",
+    "HL ",
+    // unused
     "35",
     "40",
     "45",
@@ -52,12 +70,50 @@ static const char *words[12] = {
 };
 
 static const char *past_word = " P";
-static const char *to_word = " 2";
+static const char *to_word = "to";
 static const char *oclock_word = "OC";
+
+enum OC_MODE {
+    NEVER = 0,
+    INLINE,
+    SUPER,
+};
+
+typedef struct {
+    char word[6 + 1];
+    enum OC_MODE oc_mode;
+} hour_data_t;
+
+static const hour_data_t hours_data[24] = {
+  { "MDNGHT", NEVER },
+  { " ONE  ", INLINE },
+  { " TuuO ", SUPER },
+  { " THREE", SUPER },
+  { "FOUR  ", INLINE },
+  { "FIVE  ", INLINE },
+  { " SIX  ", INLINE },
+  { "SEVEN ", SUPER },
+  { "EIGHT ", SUPER },
+  { "NINE  ", INLINE },
+  { " TEN  ", INLINE },
+  { "ELEVEN", SUPER },
+  { "NOON  ", NEVER },
+  { " ONE  ", INLINE },
+  { " Tuu0 ", SUPER },
+  { " THREE", SUPER },
+  { "FOUR  ", INLINE },
+  { "FIVE  ", INLINE },
+  { " SIX  ", INLINE },
+  { "SEVEN ", SUPER },
+  { "EIGHT ", SUPER },
+  { "NINE  ", INLINE },
+  { " TEN  ", INLINE },
+  { "ELEVEN", SUPER },
+};
 
 // sets when in the five minute period we switch
 // from "X past HH" to  "X to HH+1"
-static const int hour_switch_index = 8;
+static const int hour_switch_index = 7;
 
 static void clock_stop_tick_tock_animation(void) {
     if (watch_sleep_animation_is_running()) {
@@ -88,7 +144,8 @@ void verbal_clock_face_activate(void *context) {
     clock_stop_tick_tock_animation();
 
     clock_indicate(WATCH_INDICATOR_BELL, movement_alarm_enabled());
-    clock_indicate(WATCH_INDICATOR_24H, !!movement_clock_mode_24h());
+    // We don't support 24H mode yet (ever?)
+    clock_indicate(WATCH_INDICATOR_24H, false);
 
     // this ensures that none of the five_minute_periods will match, so we always rerender when the face activates
     state->prev_five_minute_period = -1;
@@ -163,7 +220,8 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                 break;
             }
 
-            verbal_clock_hour = date_time.unit.hour;
+            int clock_hour = date_time.unit.hour;
+            verbal_clock_hour = clock_hour;
 
             // move from "MM P HH" to "MM 2 HH+1"
             if (five_minute_period >= hour_switch_index || show_next_hour) {
@@ -171,67 +229,61 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                 show_next_hour = true;
             }
 
-            if (movement_clock_mode_24h() != MOVEMENT_CLOCK_MODE_24H) {
-                // if we are at "MM 2 12", don't show the PM indicator
-                if (verbal_clock_hour < 12 || show_next_hour) {
-                    watch_clear_indicator(WATCH_INDICATOR_PM);
-                } else {
-                    watch_set_indicator(WATCH_INDICATOR_PM);
-                }
-
-                verbal_clock_hour %= 12;
-                if (verbal_clock_hour == 0) {
-                    verbal_clock_hour = 12;
-                }
+            if (clock_hour < 12) {
+                watch_clear_indicator(WATCH_INDICATOR_PM);
+            } else {
+                watch_set_indicator(WATCH_INDICATOR_PM);
             }
 
-            char first_word[3];
-            char second_word[3];
-            char third_word[3];
+            hour_data_t hour_data = hours_data[verbal_clock_hour];
+
+            char top_mid[3 + 1] = { 0 };
+            char top_right[2 + 1] = { 0 };
+            char bottom[6 + 1] = { 0 };
             if (five_minute_period == 0) { // "  HH OC",
-                sprintf(first_word, "  ");
-                sprintf(second_word, "%2d", verbal_clock_hour);
-                strncpy(third_word, oclock_word, 3);
+                sprintf(top_mid, "   ");
+                if (hour_data.oc_mode == SUPER) {
+                    strncpy(top_right, oclock_word, 3);
+                } else {
+                    sprintf(top_right, "  ");
+                }
+                if (hour_data.oc_mode == INLINE) {
+                    strncpy(bottom, hour_data.word, 4);
+                    strncpy(bottom + 4, oclock_word, 3);
+                } else {
+                    strncpy(bottom, hour_data.word, 7);
+                }
             } else { // "MM P HH" or "MM 2 HH+1"
                 int words_length = sizeof(words) / sizeof(words[0]);
 
                 strncpy(
-                    first_word,
+                    top_mid,
                     show_next_hour ?
                         words[words_length - five_minute_period] :
                         words[five_minute_period],
-                    3
+                    4
                 );
                 strncpy(
-                    second_word,
+                    top_right,
                     show_next_hour ? to_word : past_word,
                     3
                 );
-                sprintf(third_word, "%2d", verbal_clock_hour);
+                strncpy(bottom, hour_data.word, 7);
             }
 
             watch_display_text_with_fallback(
                 WATCH_POSITION_TOP_LEFT,
-                watch_utility_get_long_weekday(date_time), watch_utility_get_weekday(date_time)
+                top_mid, top_mid
             );
 
-            char day_buf[2 + 1];
-            sprintf(day_buf, "%2d", date_time.unit.day);
             watch_display_text(
                 WATCH_POSITION_TOP_RIGHT,
-                day_buf
+                top_right
             );
 
-            char words_buf[6 + 1];
-            sprintf(words_buf,
-                "%s%s%s",
-                first_word,
-                second_word,
-                third_word
-            );
             watch_display_text(
                 WATCH_POSITION_BOTTOM,
-                words_buf
+                bottom
             );
 
             state->prev_five_minute_period = five_minute_period;
