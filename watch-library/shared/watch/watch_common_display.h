@@ -101,7 +101,7 @@ static const uint8_t Custom_LCD_Character_Set[] =
     0b01101101, // S
     0b10000001, // T (only works in position 0; set (1, 12) to make it work in position 1)
     0b00111110, // U
-    0b00111110, // V
+    0b10100010, // V
     0b10111110, // W (only works in position 0)
     0b11110110, // X
     0b01101110, // Y
