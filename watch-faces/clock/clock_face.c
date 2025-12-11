@@ -258,7 +258,19 @@ bool clock_face_loop(movement_event_t event, void *context) {
         case EVENT_BACKGROUND_TASK:
             // uncomment this line to snap back to the clock face when the hour signal sounds:
             // movement_move_to_face(state->watch_face_index);
-            movement_play_signal();
+            current = movement_get_local_date_time();
+            if (current.unit.hour == 12) {
+                movement_play_signal(false);
+            } else {
+#ifdef SIGNAL_TUNE_NON_MIDDAY_ENABLED
+#ifdef SIGNAL_TUNE_NON_MIDDAY_BASE
+                movement_play_signal(true);
+#else
+                movement_play_signal(false);
+#endif
+#else
+#endif
+            }
             break;
         default:
             return movement_default_loop_handler(event);

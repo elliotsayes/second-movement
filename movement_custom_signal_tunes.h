@@ -24,13 +24,16 @@
 
 #pragma once
 
-#ifdef SIGNAL_TUNE_DEFAULT
-int8_t signal_tune[] = {
+#include "watch_tcc.h"
+int8_t signal_tune_base[] = {
     BUZZER_NOTE_C8, 5,
     BUZZER_NOTE_REST, 6,
     BUZZER_NOTE_C8, 5,
     0
 };
+
+#ifdef SIGNAL_TUNE_DEFAULT
+int8_t signal_tune[] = signal_tune_base;
 #endif // SIGNAL_TUNE_DEFAULT
 
 #ifdef SIGNAL_TUNE_ZELDA_SECRET

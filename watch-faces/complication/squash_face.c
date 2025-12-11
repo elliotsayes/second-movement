@@ -72,16 +72,16 @@ static void check_game_status(squash_state_t *state) {
         // Award a game to the winner
         if (state->player1_score > state->player2_score) {
             state->player1_games++;
-            movement_play_signal();
+            movement_play_signal(false);
         } else {
             state->player2_games++;
-            movement_play_signal();
+            movement_play_signal(false);
         }
 
         // Check if the match is over
         if (state->player1_games >= GAMES_TO_WIN_MATCH || state->player2_games >= GAMES_TO_WIN_MATCH) {
             state->is_game_over = true;
-            movement_play_signal();
+            movement_play_signal(false);
         } else {
             // Reset for next game
             state->player1_score = 0;
@@ -97,7 +97,7 @@ static void reset_match(squash_state_t *state) {
     state->player2_games = 0;
     state->is_game_over = false;
 
-    movement_play_signal();
+    movement_play_signal(false);
 }
 
 void squash_face_setup(uint8_t watch_face_index, void **context_ptr) {

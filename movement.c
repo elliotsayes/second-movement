@@ -337,7 +337,7 @@ static void end_buzzing_and_disable_buzzer(void) {
     watch_disable_buzzer();
 }
 
-void movement_play_signal(void) {
+void movement_play_signal(bool base_tune) {
     void *maybe_disable_buzzer = end_buzzing_and_disable_buzzer;
     if (watch_is_buzzer_or_led_enabled()) {
         maybe_disable_buzzer = end_buzzing;
@@ -345,7 +345,8 @@ void movement_play_signal(void) {
         watch_enable_buzzer();
     }
     movement_state.is_buzzing = true;
-    watch_buzzer_play_sequence(signal_tune, maybe_disable_buzzer);
+    int8_t *tune = base_tune ? signal_tune_base : signal_tune;
+    watch_buzzer_play_sequence(tune, maybe_disable_buzzer);
     if (movement_state.le_mode_ticks == -1) {
         // the watch is asleep. wake it up for "1" round through the main loop.
         // the sleep_mode_app_loop will notice the is_buzzing and note that it
