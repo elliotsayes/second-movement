@@ -290,6 +290,26 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
             state->prev_five_minute_period = five_minute_period;
             break;
 
+#ifdef DEBUG
+        case EVENT_LIGHT_BUTTON_DOWN:
+            break;
+        case EVENT_LIGHT_BUTTON_UP:
+            date_time = movement_get_local_date_time();
+            date_time.unit.minute = (date_time.unit.minute + 5) % 60;
+            if (date_time.unit.minute < 5) {
+                date_time.unit.hour = (date_time.unit.hour + 1) % 24;
+            }
+            movement_set_local_date_time(date_time);
+            movement_set_low_energy_timeout(0);
+            break;
+        case EVENT_ALARM_BUTTON_UP:
+            date_time = movement_get_local_date_time();
+            date_time.unit.hour = (date_time.unit.hour + 1) % 24;
+            movement_set_local_date_time(date_time);
+            movement_set_low_energy_timeout(0);
+            break;
+#endif
+
         default:
             return movement_default_loop_handler(event);
     }
