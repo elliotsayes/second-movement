@@ -186,6 +186,11 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
     int prev_min_checked;
     int verbal_clock_hour;
 
+#ifdef DEBUG
+    uint32_t min_delta = 0;
+    uint32_t hour_delta = 0;
+#endif
+
     switch (event.event_type) {
         case EVENT_ACTIVATE:
         case EVENT_TICK:
@@ -294,17 +299,22 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
         case EVENT_LIGHT_BUTTON_DOWN:
             break;
         case EVENT_LIGHT_BUTTON_UP:
+        case EVENT_LIGHT_LONG_UP:
+            min_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -5 : +5;
+            hour_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -1 : +1;
             date_time = movement_get_local_date_time();
-            date_time.unit.minute = (date_time.unit.minute + 5) % 60;
-            if (date_time.unit.minute < 5) {
-                date_time.unit.hour = (date_time.unit.hour + 1) % 24;
+            date_time.unit.minute = (date_time.unit.minute + min_delta) % 60;
+            if ((event.event_type == EVENT_LIGHT_LONG_UP && date_time.unit.minute < 5) || (event.event_type == EVENT_LIGHT_BUTTON_UP && date_time.unit.minute < 5)) {
+                date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
             }
             movement_set_local_date_time(date_time);
             movement_set_low_energy_timeout(0);
             break;
         case EVENT_ALARM_BUTTON_UP:
+        case EVENT_ALARM_LONG_UP:
+            hour_delta = event.event_type == EVENT_ALARM_LONG_UP ? -1 : +1;
             date_time = movement_get_local_date_time();
-            date_time.unit.hour = (date_time.unit.hour + 1) % 24;
+            date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
             movement_set_local_date_time(date_time);
             movement_set_low_energy_timeout(0);
             break;
