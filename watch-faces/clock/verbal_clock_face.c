@@ -71,7 +71,8 @@ static const char *words_fallback[12] = {
 
 static const char *past_word = " P";
 static const char *to_word = "to";
-static const char *oclock_word = "OC";
+static const char *oclock_super = "oc";
+static const char *oclock_inline = "OC";
 
 enum OC_MODE {
     NEVER = 0,
@@ -85,30 +86,30 @@ typedef struct {
 } hour_data_t;
 
 static const hour_data_t hours_data[24] = {
-  { "MDNGHT", NEVER },
+  { "}}th  ", NEVER }, // lilith
   { " ONE  ", INLINE },
   { " TuuO ", SUPER },
-  { " THREE", SUPER },
-  { "FOUR  ", INLINE },
-  { "FIVE  ", INLINE },
-  { " SIX  ", INLINE },
-  { "SEVEN ", SUPER },
-  { "EIGHT ", SUPER },
-  { "NINE  ", INLINE },
-  { " TEN  ", INLINE },
-  { "ELEVEN", SUPER },
-  { "NOON  ", NEVER },
+  { " Three", SUPER },
+  { "Four  ", INLINE },
+  { "F1VE  ", INLINE },
+  { "  S,][", SUPER },
+  { " SEVeN", SUPER },
+  { "E1GHT ", SUPER },
+  { "N1NE  ", INLINE },
+  { " TeN  ", INLINE },
+  { "ELEVeN", SUPER },
+  { "Noon  ", NEVER },
   { " ONE  ", INLINE },
   { " Tuu0 ", SUPER },
-  { " THREE", SUPER },
-  { "FOUR  ", INLINE },
-  { "FIVE  ", INLINE },
-  { " SIX  ", INLINE },
-  { "SEVEN ", SUPER },
-  { "EIGHT ", SUPER },
-  { "NINE  ", INLINE },
-  { " TEN  ", INLINE },
-  { "ELEVEN", SUPER },
+  { " Three", SUPER },
+  { "Four  ", INLINE },
+  { "F1VE  ", INLINE },
+  { "  S,][", SUPER },
+  { " SEVeN", SUPER },
+  { "E1GHT ", SUPER },
+  { "N1NE  ", INLINE },
+  { " TeN  ", INLINE },
+  { "ELEVeN", SUPER },
 };
 
 // sets when in the five minute period we switch
@@ -243,13 +244,13 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
             if (five_minute_period == 0) { // "  HH OC",
                 sprintf(top_mid, "   ");
                 if (hour_data.oc_mode == SUPER) {
-                    strncpy(top_right, oclock_word, 3);
+                    strncpy(top_right, oclock_super, 3);
                 } else {
                     sprintf(top_right, "  ");
                 }
                 if (hour_data.oc_mode == INLINE) {
                     strncpy(bottom, hour_data.word, 4);
-                    strncpy(bottom + 4, oclock_word, 3);
+                    strncpy(bottom + 4, oclock_inline, 3);
                 } else {
                     strncpy(bottom, hour_data.word, 7);
                 }
