@@ -29,3 +29,4 @@ fp-info-cache
 /.emscripten_cache
 /.cache
 compile_commands.json
+totp_uris.txt
