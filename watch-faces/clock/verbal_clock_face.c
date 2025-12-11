@@ -38,12 +38,12 @@
 
 static const char *words[12] = {
     "   ",
-    "FIV",
-    "TEN",
-    "QTR",
+    "  5",
+    " 10",
+    " QT",
     "TWY",
-    "TW5",
-    "HLF",
+    "TFV",
+    "HAL", // HALF-
     // unused
     "35",
     "40",
@@ -91,7 +91,7 @@ static const hour_data_t hours_data[24] = {
   { " TuuO ", SUPER },
   { " Three", SUPER },
   { "Four  ", INLINE },
-  { "F1VE  ", INLINE },
+  { "  F,Ve", SUPER },
   { "  S,][", SUPER },
   { " SEVeN", SUPER },
   { "E1GHT ", SUPER },
@@ -103,7 +103,7 @@ static const hour_data_t hours_data[24] = {
   { " Tuu0 ", SUPER },
   { " Three", SUPER },
   { "Four  ", INLINE },
-  { "F1VE  ", INLINE },
+  { "  F,Ve", SUPER },
   { "  S,][", SUPER },
   { " SEVeN", SUPER },
   { "E1GHT ", SUPER },
@@ -269,11 +269,20 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                         words[five_minute_period],
                     4
                 );
-                strncpy(
-                    top_right,
-                    show_next_hour ? to_word : past_word,
-                    3
-                );
+                if (five_minute_period == (hour_switch_index - 1)) {
+                    // Append with "HAL" to become: HALF-
+                    strncpy(
+                        top_right,
+                        "F-",
+                        3
+                    );
+                } else {
+                    strncpy(
+                        top_right,
+                        show_next_hour ? to_word : past_word,
+                        3
+                    );
+                }
                 strncpy(bottom, hour_data.word, 7);
             }
 
