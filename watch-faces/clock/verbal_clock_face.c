@@ -226,8 +226,7 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                 break;
             }
 
-            int clock_hour = date_time.unit.hour;
-            verbal_clock_hour = clock_hour;
+            verbal_clock_hour = date_time.unit.hour;
 
             // move from "MM P HH" to "MM 2 HH+1"
             if (five_minute_period >= hour_switch_index || show_next_hour) {
@@ -235,7 +234,8 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                 show_next_hour = true;
             }
 
-            if (clock_hour < 12) {
+            // Don't show for AM or Noon
+            if (verbal_clock_hour <= 12) {
                 watch_clear_indicator(WATCH_INDICATOR_PM);
             } else {
                 watch_set_indicator(WATCH_INDICATOR_PM);
