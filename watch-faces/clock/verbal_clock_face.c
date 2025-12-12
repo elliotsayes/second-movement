@@ -39,7 +39,7 @@
 static const char *words[12] = {
     "   ",
     "  5",
-    " 10",
+    " l0",
     "qtr",
     "TWY",
     "TFV",
