@@ -151,6 +151,8 @@ void verbal_clock_face_activate(void *context) {
     // this ensures that none of the five_minute_periods will match, so we always rerender when the face activates
     state->prev_five_minute_period = -1;
     state->prev_min_checked = -1;
+    state->cfg.show_oc = false;
+    // state->cfg.debug_buttons = true;
 }
 
 static void clock_check_battery_periodically(verbal_clock_state_t *state) {
@@ -186,10 +188,35 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
     int prev_min_checked;
     int verbal_clock_hour;
 
-#ifdef DEBUG
-    uint32_t min_delta = 0;
-    uint32_t hour_delta = 0;
-#endif
+    if (state->cfg.debug_buttons) {
+        uint32_t min_delta = 0;
+        uint32_t hour_delta = 0;
+
+        switch (event.event_type) {
+            case EVENT_LIGHT_BUTTON_DOWN:
+                return true;
+            case EVENT_LIGHT_BUTTON_UP:
+            case EVENT_LIGHT_LONG_UP:
+                min_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -5 : +5;
+                hour_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -1 : +1;
+                date_time = movement_get_local_date_time();
+                date_time.unit.minute = (date_time.unit.minute + min_delta) % 60;
+                if ((event.event_type == EVENT_LIGHT_LONG_UP && date_time.unit.minute < 5) || (event.event_type == EVENT_LIGHT_BUTTON_UP && date_time.unit.minute < 5)) {
+                    date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
+                }
+                movement_set_local_date_time(date_time);
+                movement_set_low_energy_timeout(0);
+                return true;
+            case EVENT_ALARM_BUTTON_UP:
+            case EVENT_ALARM_LONG_UP:
+                hour_delta = event.event_type == EVENT_ALARM_LONG_UP ? -1 : +1;
+                date_time = movement_get_local_date_time();
+                date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
+                movement_set_local_date_time(date_time);
+                movement_set_low_energy_timeout(0);
+                return true;
+        }
+    }
 
     switch (event.event_type) {
         case EVENT_ACTIVATE:
@@ -248,12 +275,12 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
             char bottom[6 + 1] = { 0 };
             if (five_minute_period == 0) { // "  HH OC",
                 sprintf(top_mid, "   ");
-                if (hour_data.oc_mode == SUPER) {
+                if (state->cfg.show_oc && hour_data.oc_mode == SUPER) {
                     strncpy(top_right, oclock_super, 3);
                 } else {
                     sprintf(top_right, "  ");
                 }
-                if (hour_data.oc_mode == INLINE) {
+                if (state->cfg.show_oc && hour_data.oc_mode == INLINE) {
                     strncpy(bottom, hour_data.word, 4);
                     strncpy(bottom + 4, oclock_inline, 3);
                 } else {
@@ -303,31 +330,6 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
 
             state->prev_five_minute_period = five_minute_period;
             break;
-
-#ifdef DEBUG
-        case EVENT_LIGHT_BUTTON_DOWN:
-            break;
-        case EVENT_LIGHT_BUTTON_UP:
-        case EVENT_LIGHT_LONG_UP:
-            min_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -5 : +5;
-            hour_delta = event.event_type == EVENT_LIGHT_LONG_UP ? -1 : +1;
-            date_time = movement_get_local_date_time();
-            date_time.unit.minute = (date_time.unit.minute + min_delta) % 60;
-            if ((event.event_type == EVENT_LIGHT_LONG_UP && date_time.unit.minute < 5) || (event.event_type == EVENT_LIGHT_BUTTON_UP && date_time.unit.minute < 5)) {
-                date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
-            }
-            movement_set_local_date_time(date_time);
-            movement_set_low_energy_timeout(0);
-            break;
-        case EVENT_ALARM_BUTTON_UP:
-        case EVENT_ALARM_LONG_UP:
-            hour_delta = event.event_type == EVENT_ALARM_LONG_UP ? -1 : +1;
-            date_time = movement_get_local_date_time();
-            date_time.unit.hour = (date_time.unit.hour + hour_delta) % 24;
-            movement_set_local_date_time(date_time);
-            movement_set_low_energy_timeout(0);
-            break;
-#endif
 
         default:
             return movement_default_loop_handler(event);

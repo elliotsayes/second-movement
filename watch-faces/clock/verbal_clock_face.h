@@ -41,6 +41,10 @@ typedef struct {
     int prev_min_checked;
     uint8_t last_battery_check;
     bool battery_low;
+    struct {
+        bool show_oc;
+        bool debug_buttons;
+    } cfg;
 } verbal_clock_state_t;
 
 void verbal_clock_face_setup(uint8_t watch_face_index, void ** context_ptr);
