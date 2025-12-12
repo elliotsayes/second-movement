@@ -43,7 +43,7 @@ static const char *words[12] = {
     "qtr",
     "TWY",
     "TFV",
-    "HAL", // HALF-
+    "HAL", // "HALF "
     // unused
     "35",
     "40",
@@ -270,7 +270,7 @@ bool verbal_clock_face_loop(movement_event_t event, void *context) {
                     4
                 );
                 if (five_minute_period == (hour_switch_index - 1)) {
-                    // Append with "HAL" to become: HALF-
+                    // Append with "HAL" to become: "HALF "
                     strncpy(
                         top_right,
                         "F ",
