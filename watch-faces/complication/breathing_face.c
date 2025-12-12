@@ -28,7 +28,7 @@
 #include "watch.h"
 
 typedef struct {
-    uint8_t current_stage;
+    int8_t current_stage; // -1 = init
     uint8_t indication_mode; // 0 = sound only, 1 = LED only, 2 = all off
     uint8_t led_on_state; // 0 = LED off, 1 = LED on
 } breathing_state_t;
@@ -49,7 +49,7 @@ void breathing_face_setup(uint8_t watch_face_index, void ** context_ptr) {
     (void) watch_face_index; // Unused parameter
     if (*context_ptr == NULL) {
         breathing_state_t *state = malloc(sizeof(breathing_state_t));
-        state->current_stage = 0;
+        state->current_stage = -1;
         state->indication_mode = 0; // Start with sound only
         state->led_on_state = 0;
         *context_ptr = state;
@@ -58,7 +58,7 @@ void breathing_face_setup(uint8_t watch_face_index, void ** context_ptr) {
 
 void breathing_face_activate(void *context) {
     breathing_state_t *state = (breathing_state_t *)context;
-    state->current_stage = 0;
+    state->current_stage = -1;
     update_indicators(state);
 }
 
@@ -105,6 +105,10 @@ bool breathing_face_loop(movement_event_t event, void *context) {
             }
 
             switch (state->current_stage) {
+              case -1: {
+                watch_display_text_with_fallback(WATCH_POSITION_BOTTOM, "Breath", "Breath");
+                break;
+              }
               case 0: {
                 watch_display_text_with_fallback(WATCH_POSITION_BOTTOM, "Breath", "Breath");
                 if (state->indication_mode != 2)
